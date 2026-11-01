@@ -1,0 +1,15 @@
+# Virtual environment and Python cache
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Runtime data (never commit)
+storage/
+data/*.csv
+*.bin
+
+# Editor and OS files
+.vscode/
+.DS_Store
+Thumbs.db
