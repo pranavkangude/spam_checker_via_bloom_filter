@@ -99,3 +99,26 @@ def test_non_string_key_rejected():
 def test_invalid_constructor_args(n, p):
     with pytest.raises(ValueError):
         BloomFilter(n, p)
+
+
+def test_with_size_explicit_m_and_k():
+    bf = BloomFilter.with_size(1000, 3)
+    assert (bf.size, bf.num_hashes, bf.count) == (1000, 3, 0)
+    assert len(bf.bits) == 125
+    bf.add("x")
+    assert "x" in bf and "y" not in bf
+
+
+@pytest.mark.parametrize("m,k", [(0, 3), (-1, 3), (10, 0), (2 ** 33 + 1, 3), (10.5, 3), (10, 2.5)])
+def test_with_size_invalid(m, k):
+    with pytest.raises(ValueError):
+        BloomFilter.with_size(m, k)
+
+
+def test_with_size_counting_keeps_cap():
+    from core.counting_bloom import CountingBloomFilter, MAX_COUNTING_M
+
+    cf = CountingBloomFilter.with_size(100, 2)
+    assert isinstance(cf, CountingBloomFilter) and len(cf.bits) == 100
+    with pytest.raises(ValueError):
+        CountingBloomFilter.with_size(MAX_COUNTING_M + 1, 2)

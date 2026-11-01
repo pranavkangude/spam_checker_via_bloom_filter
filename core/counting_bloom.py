@@ -42,6 +42,14 @@ class CountingBloomFilter(BloomFilter):
     def _payload_size(m: int) -> int:
         return m  # one byte per counter
 
+    @classmethod
+    def with_size(cls, m: int, k: int) -> "CountingBloomFilter":
+        if isinstance(m, int) and m > MAX_COUNTING_M:
+            raise ValueError(
+                f"counting filter would need {m} bytes; the limit is {MAX_COUNTING_M}"
+            )
+        return super().with_size(m, k)
+
     @property
     def counters(self) -> bytearray:
         return self.bits

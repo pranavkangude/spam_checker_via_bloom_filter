@@ -87,6 +87,26 @@ class BloomFilter:
     def _payload_size(m: int) -> int:
         return (m + 7) // 8
 
+    @classmethod
+    def with_size(cls, m: int, k: int) -> "BloomFilter":
+        """Empty filter with an explicit number of bits m and hashes k.
+
+        Used by the experiments, which must choose m and k freely instead of
+        deriving them from (n, p). capacity and target_fp_rate are None.
+        """
+        if not isinstance(m, int) or isinstance(m, bool) or not (1 <= m <= MAX_M_BITS):
+            raise ValueError(f"m must be an integer between 1 and {MAX_M_BITS}")
+        if not isinstance(k, int) or isinstance(k, bool) or k < 1:
+            raise ValueError("k must be an integer >= 1")
+        obj = cls.__new__(cls)
+        obj.capacity = None
+        obj.target_fp_rate = None
+        obj.size = m
+        obj.num_hashes = k
+        obj.count = 0
+        obj.bits = bytearray(cls._payload_size(m))
+        return obj
+
     @staticmethod
     def _check_key(key: str) -> None:
         if not isinstance(key, str):
