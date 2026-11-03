@@ -1,0 +1,106 @@
+"""Flask app factory (B1). Run: python app.py"""
+from __future__ import annotations
+
+import importlib.util
+import logging
+import uuid
+
+from flask import Flask, jsonify, redirect, render_template, request, url_for
+from jinja2 import TemplateNotFound
+from werkzeug.exceptions import HTTPException
+
+import api
+from db import database
+from services import filter_service
+from services.errors import ServiceError
+
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+
+# path -> (endpoint name, template file). Templates are built by Member C.
+PAGES = {
+    "/": ("dashboard", "dashboard.html"),
+    "/setup": ("setup", "setup.html"),
+    "/check": ("check", "checker.html"),
+    "/blacklist": ("blacklist", "blacklist.html"),
+    "/import": ("import_page", "import.html"),
+    "/benchmark": ("benchmark", "benchmark.html"),
+    "/experiments": ("experiments", "experiments.html"),
+    "/visualizer": ("visualizer", "visualizer.html"),
+    "/history": ("history", "history.html"),
+    "/settings": ("settings", "settings.html"),
+}
+
+_HTTP_CODES = {400: "VALIDATION_ERROR", 404: "NOT_FOUND", 405: "METHOD_NOT_ALLOWED",
+               413: "PAYLOAD_TOO_LARGE"}
+
+
+def _page_view(template: str):
+    def view():
+        try:
+            return render_template(template)
+        except TemplateNotFound:
+            return f"Page '{template}' is not built yet (Member C).", 200
+    return view
+
+
+def create_app(storage_dir=None, testing: bool = False) -> Flask:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    app = Flask(__name__)
+    app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_BYTES
+    app.config["TESTING"] = testing
+
+    database.configure(storage_dir)
+    database.init_db()
+    filter_service.load_on_startup()
+
+    app.register_blueprint(api.bp)
+    # Member C's routes: api_extra.py must define a Blueprint named `bp`
+    # (registered under /api, so its routes are "/datasets", "/check/batch").
+    if importlib.util.find_spec("api_extra") is not None:
+        import api_extra
+        app.register_blueprint(api_extra.bp, url_prefix="/api")
+
+    for path, (endpoint, template) in PAGES.items():
+        app.add_url_rule(path, endpoint, _page_view(template))
+
+    @app.before_request
+    def require_filter():
+        path = request.path
+        if path.startswith(("/api/", "/static/")):
+            return None
+        has = filter_service.has_filter()
+        if path == "/setup":
+            return redirect(url_for("dashboard")) if has else None
+        if not has:
+            return redirect(url_for("setup"))
+        return None
+
+    @app.errorhandler(ServiceError)
+    def handle_service_error(exc: ServiceError):
+        err = {"code": exc.code, "message": exc.message}
+        if exc.field:
+            err["field"] = exc.field
+        return jsonify({"error": err}), exc.status
+
+    @app.errorhandler(HTTPException)
+    def handle_http_error(exc: HTTPException):
+        if not request.path.startswith("/api/"):
+            return exc
+        code = _HTTP_CODES.get(exc.code, "HTTP_ERROR")
+        return jsonify({"error": {"code": code, "message": exc.description}}), exc.code
+
+    @app.errorhandler(Exception)
+    def handle_unexpected(exc: Exception):
+        request_id = uuid.uuid4().hex[:8]
+        app.logger.exception("Unhandled error (request %s)", request_id)
+        if request.path.startswith("/api/"):
+            return jsonify({"error": {"code": "INTERNAL_ERROR",
+                                      "message": "Something went wrong. Check the terminal.",
+                                      "request_id": request_id}}), 500
+        return f"Something went wrong. Check the terminal. Request id: {request_id}", 500
+
+    return app
+
+
+if __name__ == "__main__":
+    create_app().run(host="127.0.0.1", port=5000, debug=False, threaded=True)
