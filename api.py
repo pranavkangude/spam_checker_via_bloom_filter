@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from flask import Blueprint, jsonify, request
 
-from services import check_service, filter_service
+from services import check_service, filter_service, import_service
 from services.errors import ValidationError
 
 bp = Blueprint("api", __name__, url_prefix="/api")
@@ -107,6 +107,29 @@ def blacklist_list():
         q=request.args.get("q"),
         key_type=request.args.get("key_type") or None,
         label=request.args.get("label") or None,
+    ))
+
+
+@bp.post("/blacklist/bulk")
+def blacklist_bulk():
+    """multipart/form-data: file, column, key_type, label (BACKEND_SCHEMA 4.3)."""
+    upload = request.files.get("file")
+    if upload is None or not upload.filename:
+        raise ValidationError("a file is required (form field 'file')", field="file")
+    return jsonify(import_service.import_file(
+        upload.filename, upload.read(),
+        column=request.form.get("column") or None,
+        key_type=request.form.get("key_type") or "other",
+        label=request.form.get("label") or "fraud",
+    ))
+
+
+@bp.post("/blacklist/generate")
+def blacklist_generate():
+    d = _body()
+    return jsonify(import_service.generate(
+        d.get("count"), d.get("prefix", "fraud_txn_"), d.get("label", "fraud"),
+        d.get("key_type", "transaction_id"), d.get("start", 0),
     ))
 
 
