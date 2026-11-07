@@ -9,10 +9,11 @@ import logging
 import time
 
 from core.counting_bloom import CountingBloomFilter
-from core.normalizer import KEY_TYPES, normalize
+from core.normalizer import KEY_TYPES
 from db import database
 from services import filter_service
 from services.errors import ValidationError
+from services.keys import clean_key
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ def check_item(item, key_type: str = "other", mode: str = "two_stage", log_it: b
     if mode not in MODES:
         raise ValidationError(f"mode must be one of {', '.join(MODES)}", field="mode")
     try:
-        key = normalize(item, key_type)
+        key = clean_key(item, key_type)
     except ValueError as exc:
         raise ValidationError(str(exc), field="item")
 

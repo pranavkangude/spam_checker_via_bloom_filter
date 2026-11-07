@@ -14,11 +14,12 @@ from typing import Iterable, Optional
 from core.bloom import BloomFilter, FilterFormatError
 from core.counting_bloom import MAX_COUNTING_M, CountingBloomFilter
 from core.estimates import bloom_memory_bytes, counting_memory_bytes, set_memory_estimate
-from core.normalizer import KEY_TYPES, normalize
+from core.normalizer import KEY_TYPES
 from core.params import fp_rate as theoretical_fp
 from core.params import optimal_k, optimal_m
 from db import database
 from services.errors import ConflictError, NotFoundError, ValidationError
+from services.keys import clean_key
 
 log = logging.getLogger(__name__)
 
@@ -262,7 +263,7 @@ def add_item(item, key_type: str = "other", label: str = "fraud", source: str = 
     """Add one item: SQLite first (duplicate -> 409), then the filter, then save."""
     key_type, label = _check_key_type(key_type), _check_label(label)
     try:
-        key = normalize(item, key_type)
+        key = clean_key(item, key_type)
     except ValueError as exc:
         raise ValidationError(str(exc), field="item")
     with _lock:
@@ -303,7 +304,7 @@ def add_many(keys: Iterable[str], key_type: str = "other", label: str = "fraud",
             for raw in keys:
                 read += 1
                 try:
-                    key = normalize(raw, key_type)
+                    key = clean_key(raw, key_type)
                 except ValueError:
                     invalid += 1
                     continue
@@ -353,7 +354,7 @@ def remove_item(item, key_type: str = "other") -> dict:
     """Remove one item (Counting only). Confirms the key exists in SQLite first."""
     key_type = _check_key_type(key_type)
     try:
-        key = normalize(item, key_type)
+        key = clean_key(item, key_type)
     except ValueError as exc:
         raise ValidationError(str(exc), field="item")
     with _lock:
