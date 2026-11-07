@@ -4,9 +4,9 @@ Validation lives in the services; this file only reads input and returns JSON.
 """
 from __future__ import annotations
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
 
-from services import check_service, filter_service, import_service
+from services import check_service, filter_service, import_service, job_service, lab_service
 from services.errors import ValidationError
 
 bp = Blueprint("api", __name__, url_prefix="/api")
@@ -153,3 +153,51 @@ def history_list():
 def history_clear():
     check_service.clear_history()
     return "", 204
+
+
+# ---- benchmark, experiments and background jobs (B7) -------------------------
+
+def _job_response(snapshot: dict, wait: bool):
+    """wait=true -> the finished result (200); otherwise the job to poll (202)."""
+    if wait:
+        return jsonify(snapshot["result"])
+    return jsonify(snapshot), 202
+
+
+@bp.post("/benchmark")
+def benchmark_run():
+    snapshot, wait = lab_service.start_benchmark(_body())
+    return _job_response(snapshot, wait)
+
+
+@bp.get("/benchmark/runs")
+def benchmark_runs():
+    return jsonify(lab_service.list_benchmark_runs())
+
+
+@bp.post("/experiments")
+def experiment_run():
+    snapshot, wait = lab_service.start_experiment(_body())
+    return _job_response(snapshot, wait)
+
+
+@bp.get("/experiments")
+def experiment_list():
+    return jsonify(lab_service.list_experiments())
+
+
+@bp.get("/experiments/<int:exp_id>")
+def experiment_get(exp_id: int):
+    return jsonify(lab_service.get_experiment(exp_id))
+
+
+@bp.get("/experiments/<int:exp_id>/csv")
+def experiment_csv(exp_id: int):
+    text, filename = lab_service.experiment_csv(exp_id)
+    return Response(text, mimetype="text/csv",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@bp.get("/jobs/<job_id>")
+def job_get(job_id: str):
+    return jsonify(job_service.get(job_id))
