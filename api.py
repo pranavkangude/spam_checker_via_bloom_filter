@@ -17,20 +17,35 @@ bp = Blueprint("api", __name__, url_prefix="/api")
 MAX_PAGE_SIZE = 100
 
 
+BODY_HINT = "request body must be a JSON object (send Content-Type: application/json)"
+
+
+def _json():
+    """The parsed JSON body, or None if it is missing or not valid JSON.
+
+    An absurdly nested body such as 100,000 "[" characters makes Python's JSON
+    parser raise RecursionError; treat that as a 400, not a crash.
+    """
+    try:
+        return request.get_json(silent=True)
+    except RecursionError:
+        raise ValidationError("request body is nested too deeply")
+
+
 def _body() -> dict:
-    data = request.get_json(silent=True)
+    data = _json()
     if not isinstance(data, dict):
-        raise ValidationError("request body must be a JSON object")
+        raise ValidationError(BODY_HINT)
     return data
 
 
 def _body_or_empty() -> dict:
     """Like _body(), but a missing body counts as {} (all fields optional)."""
-    data = request.get_json(silent=True)
+    data = _json()
     if data is None and not request.get_data():
         return {}
     if not isinstance(data, dict):
-        raise ValidationError("request body must be a JSON object")
+        raise ValidationError(BODY_HINT)
     return data
 
 
@@ -87,7 +102,7 @@ def filter_rebuild():
 
 @bp.delete("/filter")
 def filter_reset():
-    d = request.get_json(silent=True)
+    d = _json()
     if not isinstance(d, dict) or d.get("confirm") != "RESET":
         raise ValidationError('send {"confirm": "RESET"} to reset everything', field="confirm")
     filter_service.reset_all()

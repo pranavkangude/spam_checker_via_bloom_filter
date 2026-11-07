@@ -170,6 +170,8 @@ def list_experiments() -> list[dict]:
 
 def get_experiment(exp_id: int) -> dict:
     """One saved experiment with its points. analysis and meta are recomputed."""
+    if not 1 <= exp_id <= MAX_SEED:               # SQLite integers are 64-bit; avoid OverflowError
+        raise NotFoundError("Experiment not found")
     exp = database.query_one("SELECT * FROM fp_experiments WHERE id = ?", (exp_id,))
     if exp is None:
         raise NotFoundError("Experiment not found")

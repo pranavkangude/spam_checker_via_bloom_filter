@@ -20,7 +20,8 @@ from services import filter_service
 from services.errors import PayloadTooLargeError, ValidationError
 
 ALLOWED_EXTENSIONS = (".csv", ".txt")
-GEN_MAX_COUNT = 500_000      # measured about 45,000 rows/s, so about 11 s at the limit
+MAX_IMPORT_ROWS = 200_000     # TRD section 13; larger loads belong in a script
+GEN_MAX_COUNT = 200_000      # TRD section 13; about 4.5 s at the measured 45,000 rows/s
 GEN_MAX_PREFIX = 50
 FILE_NAME_MAX = 255
 
@@ -31,6 +32,17 @@ def _decode(data: bytes) -> str:
         return data.decode("utf-8-sig")
     except UnicodeDecodeError:
         return data.decode("latin-1")
+
+
+def _limit_rows(rows: Iterator[str]) -> Iterator[str]:
+    """Stop an oversized import. The error rolls the whole import back (all or nothing)."""
+    for count, row in enumerate(rows, start=1):
+        if count > MAX_IMPORT_ROWS:
+            raise PayloadTooLargeError(
+                f"a file may hold at most {MAX_IMPORT_ROWS:,} rows; split it into several files",
+                field="file",
+            )
+        yield row
 
 
 def _iter_txt(text: str) -> Iterator[str]:
@@ -80,6 +92,7 @@ def import_file(filename, data: bytes, column=None, key_type: str = "other",
 
     text = _decode(data)
     keys = _iter_csv(text, column) if ext == ".csv" else _iter_txt(text)
+    keys = _limit_rows(keys)
     return filter_service.add_many(
         keys, key_type, label, source="csv", file_name=name[:FILE_NAME_MAX]
     )

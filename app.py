@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import logging
+import sqlite3
 import uuid
 
 from flask import Flask, jsonify, redirect, render_template, request, url_for
@@ -87,7 +88,22 @@ def create_app(storage_dir=None, testing: bool = False) -> Flask:
         if not request.path.startswith("/api/"):
             return exc
         code = _HTTP_CODES.get(exc.code, "HTTP_ERROR")
-        return jsonify({"error": {"code": code, "message": exc.description}}), exc.code
+        response = jsonify({"error": {"code": code, "message": exc.description}})
+        response.status_code = exc.code
+        allow = dict(exc.get_headers()).get("Allow")     # 405: tell the client what is allowed
+        if allow:
+            response.headers["Allow"] = allow
+        return response
+
+    @app.errorhandler(sqlite3.OperationalError)
+    def handle_db_busy(exc: sqlite3.OperationalError):
+        if "locked" not in str(exc).lower() and "busy" not in str(exc).lower():
+            return handle_unexpected(exc)
+        app.logger.warning("Database busy: %s", exc)
+        message = "The database is busy. Try again in a moment."
+        if request.path.startswith("/api/"):
+            return jsonify({"error": {"code": "DATABASE_BUSY", "message": message}}), 503
+        return message, 503
 
     @app.errorhandler(Exception)
     def handle_unexpected(exc: Exception):

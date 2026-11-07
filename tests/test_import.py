@@ -127,7 +127,7 @@ def test_generate_over_capacity_flag(client):
 
 @pytest.mark.parametrize("body,status", [
     ({"count": 0}, 400), ({"count": "5"}, 400), ({"count": True}, 400), ({}, 400),
-    ({"count": 500_001}, 413), ({"count": 5, "label": "bad"}, 400),
+    ({"count": 200_001}, 413), ({"count": 5, "label": "bad"}, 400),
     ({"count": 5, "prefix": "p" * 51}, 400), ({"count": 5, "prefix": 7}, 400),
     ({"count": 5, "start": -1}, 400), ({"count": 5, "key_type": "bad"}, 400),
 ])
