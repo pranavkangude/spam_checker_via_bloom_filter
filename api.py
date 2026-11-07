@@ -6,7 +6,10 @@ from __future__ import annotations
 
 from flask import Blueprint, Response, jsonify, request
 
-from services import check_service, filter_service, import_service, job_service, lab_service
+from services import (
+    check_service, filter_service, import_service, job_service, lab_service,
+    visualizer_service,
+)
 from services.errors import ValidationError
 
 bp = Blueprint("api", __name__, url_prefix="/api")
@@ -16,6 +19,16 @@ MAX_PAGE_SIZE = 100
 
 def _body() -> dict:
     data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        raise ValidationError("request body must be a JSON object")
+    return data
+
+
+def _body_or_empty() -> dict:
+    """Like _body(), but a missing body counts as {} (all fields optional)."""
+    data = request.get_json(silent=True)
+    if data is None and not request.get_data():
+        return {}
     if not isinstance(data, dict):
         raise ValidationError("request body must be a JSON object")
     return data
@@ -201,3 +214,36 @@ def experiment_csv(exp_id: int):
 @bp.get("/jobs/<job_id>")
 def job_get(job_id: str):
     return jsonify(job_service.get(job_id))
+
+
+# ---- visualizer: in-memory teaching filter (B8) ------------------------------
+
+@bp.get("/visualizer/state")
+def visualizer_state():
+    return jsonify(visualizer_service.state())
+
+
+@bp.post("/visualizer/reset")
+def visualizer_reset():
+    d = _body_or_empty()
+    return jsonify(visualizer_service.reset(
+        d.get("m", visualizer_service.DEFAULT_M), d.get("k", visualizer_service.DEFAULT_K)
+    ))
+
+
+@bp.post("/visualizer/insert")
+def visualizer_insert():
+    return jsonify(visualizer_service.insert(_body().get("item")))
+
+
+@bp.post("/visualizer/query")
+def visualizer_query():
+    return jsonify(visualizer_service.query(_body().get("item")))
+
+
+@bp.post("/visualizer/find-false-positive")
+def visualizer_find_false_positive():
+    d = _body_or_empty()
+    return jsonify(visualizer_service.find_false_positive(
+        d.get("max_tries", visualizer_service.DEFAULT_MAX_TRIES), d.get("seed")
+    ))
