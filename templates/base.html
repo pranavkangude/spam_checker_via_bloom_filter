@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>{% block title %}BloomGuard{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='7' fill='%230F172A'/%3E%3Crect x='5' y='5' width='5' height='5' rx='1.2' fill='%2314B8A6'/%3E%3Crect x='11.5' y='5' width='5' height='5' rx='1.2' fill='%23ffffff' fill-opacity='.25'/%3E%3Crect x='18' y='5' width='5' height='5' rx='1.2' fill='%23ffffff' fill-opacity='.25'/%3E%3Crect x='5' y='11.5' width='5' height='5' rx='1.2' fill='%23ffffff' fill-opacity='.25'/%3E%3Crect x='11.5' y='11.5' width='5' height='5' rx='1.2' fill='%234F46E5'/%3E%3Crect x='18' y='11.5' width='5' height='5' rx='1.2' fill='%2314B8A6'/%3E%3Crect x='5' y='18' width='5' height='5' rx='1.2' fill='%23ffffff' fill-opacity='.25'/%3E%3Crect x='11.5' y='18' width='5' height='5' rx='1.2' fill='%23ffffff' fill-opacity='.25'/%3E%3Crect x='18' y='18' width='5' height='5' rx='1.2' fill='%23ffffff' fill-opacity='.25'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body data-page="{{ request.endpoint }}">
+  <!-- Icon sprite: all icons are 24x24 stroke icons -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-x-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3M12 9v4M12 17h.01"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5zM14 2v6h6"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16M4 6h16M4 18h16"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  {% block header %}
+  {% set ep = request.endpoint %}
+  <header class="nav" id="nav">
+    <div class="container nav__bar">
+      <a class="brand" href="{{ url_for('dashboard') }}" aria-label="BloomGuard home">
+        <svg viewBox="0 0 28 28" aria-hidden="true">
+          <rect width="28" height="28" rx="7" fill="#1E293B"/>
+          <rect x="5" y="5" width="5" height="5" rx="1.2" fill="#14B8A6"/>
+          <rect x="11.5" y="5" width="5" height="5" rx="1.2" fill="#fff" fill-opacity=".22"/>
+          <rect x="18" y="5" width="5" height="5" rx="1.2" fill="#fff" fill-opacity=".22"/>
+          <rect x="5" y="11.5" width="5" height="5" rx="1.2" fill="#fff" fill-opacity=".22"/>
+          <rect x="11.5" y="11.5" width="5" height="5" rx="1.2" fill="#4F46E5"/>
+          <rect x="18" y="11.5" width="5" height="5" rx="1.2" fill="#14B8A6"/>
+          <rect x="5" y="18" width="5" height="5" rx="1.2" fill="#fff" fill-opacity=".22"/>
+          <rect x="11.5" y="18" width="5" height="5" rx="1.2" fill="#fff" fill-opacity=".22"/>
+          <rect x="18" y="18" width="5" height="5" rx="1.2" fill="#fff" fill-opacity=".22"/>
+        </svg>
+        BloomGuard
+      </a>
+
+      <button class="nav__toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu">
+        <svg class="icon"><use href="#i-menu"/></svg>
+      </button>
+
+      <ul class="nav__menu" id="nav-menu">
+        <li><a class="nav__link" href="{{ url_for('dashboard') }}" {% if ep == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a></li>
+        <li><a class="nav__link" href="{{ url_for('check') }}" {% if ep == 'check' %}aria-current="page"{% endif %}>Check</a></li>
+        <li><a class="nav__link" href="{{ url_for('blacklist') }}" {% if ep == 'blacklist' %}aria-current="page"{% endif %}>Blacklist</a></li>
+        <li><a class="nav__link" href="{{ url_for('import_page') }}" {% if ep == 'import_page' %}aria-current="page"{% endif %}>Import</a></li>
+        <li><a class="nav__link" href="{{ url_for('history') }}" {% if ep == 'history' %}aria-current="page"{% endif %}>History</a></li>
+        <li class="dropdown" id="lab-dropdown">
+          <button class="dropdown__btn {% if ep in ['benchmark', 'experiments', 'visualizer'] %}is-current{% endif %}" id="lab-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="lab-menu">
+            Lab <svg class="icon icon--sm chev"><use href="#i-chev"/></svg>
+          </button>
+          <ul class="dropdown__menu" id="lab-menu" hidden>
+            <li><a class="dropdown__item" href="{{ url_for('benchmark') }}" {% if ep == 'benchmark' %}aria-current="page"{% endif %}><b>Benchmark</b><span>Bloom filter against a Python set</span></a></li>
+            <li><a class="dropdown__item" href="{{ url_for('experiments') }}" {% if ep == 'experiments' %}aria-current="page"{% endif %}><b>Experiments</b><span>Measured against theoretical false positives</span></a></li>
+            <li><a class="dropdown__item" href="{{ url_for('visualizer') }}" {% if ep == 'visualizer' %}aria-current="page"{% endif %}><b>Visualizer</b><span>Watch bits switch on, step by step</span></a></li>
+          </ul>
+        </li>
+        <li><a class="nav__link" href="{{ url_for('settings') }}" {% if ep == 'settings' %}aria-current="page"{% endif %}>Settings</a></li>
+      </ul>
+
+      <div class="nav__end">
+        <a class="chip" id="filter-chip" href="{{ url_for('settings') }}" title="Active filter">
+          <span class="chip__dot is-off" id="chip-dot"></span>
+          <span class="chip__name" id="chip-name">Loading filter</span>
+        </a>
+      </div>
+    </div>
+  </header>
+  {% endblock %}
+
+  <main id="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>BloomGuard checks identifiers against a large blacklist using a Bloom filter and an exact SQLite lookup.</span>
+      <span>DSA course project</span>
+    </div>
+  </footer>
+
+  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+  <noscript><div class="container" style="padding:16px 0"><p class="alert alert--warning">BloomGuard needs JavaScript to talk to its server. Turn JavaScript on and reload.</p></div></noscript>
+
+  <script src="{{ url_for('static', filename='js/common.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

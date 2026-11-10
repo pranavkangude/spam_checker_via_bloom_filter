@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Blacklist - BloomGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Blacklist</h1>
+      <p class="lead">Every item the filter knows about. Add single items here, or load many at once from the Import page.</p>
+    </div>
+    <div class="page-head__actions">
+      <a class="btn btn--secondary" href="{{ url_for('import_page') }}"><svg class="icon icon--sm"><use href="#i-upload"/></svg>Import a file</a>
+    </div>
+  </div>
+
+  <div class="page-body stack">
+    <div id="remove-note"></div>
+
+    <form class="card" id="add-form" novalidate aria-labelledby="add-title">
+      <div class="card__head"><div><h2 id="add-title">Add an item</h2></div></div>
+      <div class="add-grid">
+        <div class="field">
+          <label for="a-item">Item</label>
+          <input class="input input--mono" id="a-item" name="item" type="text" autocomplete="off" spellcheck="false" maxlength="2048" placeholder="fraud_txn_1">
+          <div class="error" role="alert"></div>
+        </div>
+        <div class="field">
+          <label for="a-type">Type</label>
+          <select class="select" id="a-type" name="key_type"></select>
+          <div class="error" role="alert"></div>
+        </div>
+        <div class="field">
+          <label for="a-label">Label</label>
+          <select class="select" id="a-label" name="label"></select>
+          <div class="error" role="alert"></div>
+        </div>
+        <div class="field">
+          <span class="label" aria-hidden="true">&nbsp;</span>
+          <button class="btn btn--primary" id="add-btn" type="submit"><svg class="icon icon--sm"><use href="#i-plus"/></svg>Add item</button>
+        </div>
+      </div>
+    </form>
+
+    <section class="card card--flush" aria-labelledby="list-title">
+      <div class="toolbar">
+        <h2 id="list-title" class="visually-hidden">Blacklist entries</h2>
+        <div class="search">
+          <svg class="icon icon--sm"><use href="#i-search"/></svg>
+          <input class="input" id="q" type="search" placeholder="Search items" aria-label="Search items" autocomplete="off">
+        </div>
+        <select class="select" id="f-type" aria-label="Filter by type"></select>
+        <select class="select" id="f-label" aria-label="Filter by label"></select>
+      </div>
+      <div id="list"></div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/blacklist.js') }}" defer></script>
+{% endblock %}

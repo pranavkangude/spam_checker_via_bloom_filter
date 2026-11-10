@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Benchmark - BloomGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Benchmark</h1>
+      <p class="lead">Compare the Bloom filter with a Python set on memory and speed.</p>
+    </div>
+  </div>
+  <div class="page-body">
+    <section class="card">
+      <div class="empty">
+        <div class="empty__icon"><svg class="icon icon--lg"><use href="#i-bolt"/></svg></div>
+        <h3>This page is not built yet</h3>
+        <p>It will let you run a benchmark and see the results as charts. The backend for it is already running, so the page can be added without changing the server.</p>
+        <a class="btn btn--primary" href="{{ url_for('dashboard') }}">Back to the dashboard</a>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

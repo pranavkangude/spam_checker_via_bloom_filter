@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - BloomGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Dashboard</h1>
+      <p class="lead">How full the filter is, how accurate it should be, and what it has been asked lately.</p>
+    </div>
+    <div class="page-head__actions">
+      <a class="btn btn--secondary" href="{{ url_for('blacklist') }}"><svg class="icon icon--sm"><use href="#i-plus"/></svg>Add item</a>
+      <a class="btn btn--primary" href="{{ url_for('check') }}"><svg class="icon icon--sm"><use href="#i-search"/></svg>Check an item</a>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div id="notices" class="stack stack--sm" style="margin-bottom:24px"></div>
+    <div id="dash"><div class="skeleton" style="height:260px;border-radius:16px"></div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
+{% endblock %}
