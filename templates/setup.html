@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Create your filter - BloomGuard{% endblock %}
+
+{% block header %}
+<header class="nav">
+  <div class="container nav__bar">
+    <span class="brand">
+      <svg viewBox="0 0 28 28" aria-hidden="true">
+        <rect width="28" height="28" rx="7" fill="#1E293B"/>
+        <rect x="5" y="5" width="5" height="5" rx="1.2" fill="#14B8A6"/>
+        <rect x="11.5" y="5" width="5" height="5" rx="1.2" fill="#fff" fill-opacity=".22"/>
+        <rect x="18" y="5" width="5" height="5" rx="1.2" fill="#fff" fill-opacity=".22"/>
+        <rect x="5" y="11.5" width="5" height="5" rx="1.2" fill="#fff" fill-opacity=".22"/>
+        <rect x="11.5" y="11.5" width="5" height="5" rx="1.2" fill="#4F46E5"/>
+        <rect x="18" y="11.5" width="5" height="5" rx="1.2" fill="#14B8A6"/>
+        <rect x="5" y="18" width="5" height="5" rx="1.2" fill="#fff" fill-opacity=".22"/>
+        <rect x="11.5" y="18" width="5" height="5" rx="1.2" fill="#fff" fill-opacity=".22"/>
+        <rect x="18" y="18" width="5" height="5" rx="1.2" fill="#fff" fill-opacity=".22"/>
+      </svg>
+      BloomGuard
+    </span>
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="container setup">
+  <div class="setup__intro">
+    <h1>Create your filter</h1>
+    <p>Tell BloomGuard how many blacklisted items to expect and how many false alarms you can live with. It works out the size of the filter for you.</p>
+  </div>
+
+  <div class="grid grid--main">
+    <form class="card stack" id="setup-form" novalidate>
+      <div class="field">
+        <label for="f-name">Filter name</label>
+        <input class="input" id="f-name" name="name" type="text" value="main" maxlength="100" autocomplete="off">
+        <div class="error" role="alert"></div>
+      </div>
+
+      <fieldset class="field" style="border:0;padding:0;margin:0">
+        <legend class="legend" style="padding:0;margin-bottom:6px">Filter type</legend>
+        <div class="choices">
+          <label class="choice">
+            <input type="radio" name="type" value="standard" checked>
+            <span class="choice__box"><b>Standard</b><span>Smallest and fastest. You can add items but not remove them.</span></span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="type" value="counting">
+            <span class="choice__box"><b>Counting</b><span>Lets you remove items later. Uses one byte per slot instead of one bit.</span></span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="f-n">Expected items</label>
+          <input class="input" id="f-n" name="n" type="text" inputmode="numeric" value="100,000" autocomplete="off" aria-describedby="n-hint">
+          <div class="presets" role="group" aria-label="Item count presets">
+            <button type="button" class="preset" data-n="10000">10,000</button>
+            <button type="button" class="preset" data-n="100000">100,000</button>
+            <button type="button" class="preset" data-n="1000000">1,000,000</button>
+          </div>
+          <div class="hint" id="n-hint">Whole number from 1 to 50,000,000.</div>
+          <div class="error" role="alert"></div>
+        </div>
+        <div class="field">
+          <label for="f-p">Accepted false-positive rate</label>
+          <div class="input-group">
+            <input class="input" id="f-p" name="p" type="text" inputmode="decimal" value="1" autocomplete="off" aria-describedby="p-hint">
+            <span class="suffix" aria-hidden="true">%</span>
+          </div>
+          <div class="presets" role="group" aria-label="False-positive presets">
+            <button type="button" class="preset" data-p="5">5%</button>
+            <button type="button" class="preset" data-p="1">1%</button>
+            <button type="button" class="preset" data-p="0.1">0.1%</button>
+          </div>
+          <div class="hint" id="p-hint">Between 0.01% and 50%. Lower means more memory.</div>
+          <div class="error" role="alert"></div>
+        </div>
+      </div>
+
+      <div id="form-alert"></div>
+
+      <div class="row row--between">
+        <p class="small muted">Every false positive is caught by the exact database check, so a higher rate only costs speed.</p>
+        <button class="btn btn--primary btn--block-sm" id="create-btn" type="submit">Create filter</button>
+      </div>
+    </form>
+
+    <aside class="card preview" aria-live="polite" aria-labelledby="preview-title">
+      <div class="card__head">
+        <div>
+          <h2 id="preview-title">What you will get</h2>
+          <p>Updates as you type.</p>
+        </div>
+      </div>
+      <div id="preview-body"></div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/setup.js') }}" defer></script>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Check an item - BloomGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Check an item</h1>
+      <p class="lead">Find out whether a transaction ID, email, URL, IP address or phone number is on the blacklist.</p>
+    </div>
+  </div>
+
+  <div class="page-body grid grid--main">
+    <div class="stack">
+      <form class="card stack" id="check-form" novalidate>
+        <div class="field">
+          <label for="c-item">Item to check</label>
+          <input class="input input--lg input--mono" id="c-item" name="item" type="text" autocomplete="off" spellcheck="false" placeholder="fraud_txn_1" maxlength="2048" autofocus>
+          <div class="error" role="alert"></div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="c-type">Type</label>
+            <select class="select" id="c-type" name="key_type"></select>
+            <div class="hint">The type decides how the item is cleaned before it is compared.</div>
+          </div>
+          <div class="field">
+            <span class="label" id="mode-label">How to check</span>
+            <div class="seg" role="radiogroup" aria-labelledby="mode-label">
+              <label><input type="radio" name="mode" value="two_stage" checked><span>Filter and database</span></label>
+              <label><input type="radio" name="mode" value="bloom_only"><span>Filter only</span></label>
+            </div>
+            <div class="hint" id="mode-hint">Exact answer: the database confirms every hit.</div>
+          </div>
+        </div>
+        <div class="row row--between">
+          <span class="small muted">Press Enter to check.</span>
+          <button class="btn btn--primary" id="check-btn" type="submit"><svg class="icon icon--sm"><use href="#i-search"/></svg>Check item</button>
+        </div>
+      </form>
+
+      <section aria-live="polite" id="result-area"></section>
+    </div>
+
+    <aside class="card" aria-labelledby="recent-title">
+      <div class="card__head">
+        <div><h2 id="recent-title">Recent checks</h2></div>
+        <a class="btn btn--ghost btn--sm" href="{{ url_for('history') }}">View all</a>
+      </div>
+      <div id="recent"><div class="skeleton" style="height:120px"></div></div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/checker.js') }}" defer></script>
+{% endblock %}

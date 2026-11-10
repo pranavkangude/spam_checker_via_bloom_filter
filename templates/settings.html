@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Settings - BloomGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Settings</h1>
+      <p class="lead">Resize the filter when your blacklist outgrows it, or wipe everything and start over.</p>
+    </div>
+  </div>
+
+  <div class="page-body stack">
+    <section class="card" aria-labelledby="cur-title">
+      <div class="card__head">
+        <div>
+          <h2 id="cur-title">Current filter</h2>
+          <p>What the filter is set up for right now.</p>
+        </div>
+      </div>
+      <div id="current"><div class="skeleton" style="height:120px"></div></div>
+    </section>
+
+    <section class="card" aria-labelledby="rebuild-title">
+      <div class="card__head">
+        <div>
+          <h2 id="rebuild-title">Rebuild with new size</h2>
+          <p>Creates a new filter from every entry stored in the database. Nothing is lost, and checks keep working while it runs.</p>
+        </div>
+      </div>
+      <form id="rebuild-form" class="stack" novalidate>
+        <div class="form-row">
+          <div class="field">
+            <label for="r-n">Expected items</label>
+            <input class="input" id="r-n" name="n" type="text" inputmode="numeric" autocomplete="off">
+            <div class="hint" id="r-n-hint">Whole number from 1 to 50,000,000.</div>
+            <div class="error" role="alert"></div>
+          </div>
+          <div class="field">
+            <label for="r-p">Accepted false-positive rate</label>
+            <div class="input-group">
+              <input class="input" id="r-p" name="p" type="text" inputmode="decimal" autocomplete="off">
+              <span class="suffix" aria-hidden="true">%</span>
+            </div>
+            <div class="hint">Between 0.01% and 50%.</div>
+            <div class="error" role="alert"></div>
+          </div>
+        </div>
+        <div id="rebuild-alert"></div>
+        <div class="row">
+          <button class="btn btn--primary" id="rebuild-btn" type="submit">Rebuild filter</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card card--danger" aria-labelledby="reset-title">
+      <div class="card__head">
+        <div>
+          <h2 id="reset-title">Reset everything</h2>
+          <p>Deletes the filter, the whole blacklist, the check history and the import records. This cannot be undone.</p>
+        </div>
+      </div>
+      <button class="btn btn--danger" id="reset-btn" type="button">Reset everything</button>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/settings.js') }}" defer></script>
+{% endblock %}

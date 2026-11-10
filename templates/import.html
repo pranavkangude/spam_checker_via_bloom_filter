@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Import - BloomGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Import</h1>
+      <p class="lead">Load many items at once from a file, or generate sample keys to try the system out.</p>
+    </div>
+  </div>
+
+  <div class="page-body stack">
+    <div class="grid grid--side">
+      <form class="card stack" id="upload-form" novalidate aria-labelledby="up-title">
+        <div class="card__head" style="margin-bottom:0">
+          <div>
+            <h2 id="up-title">Upload a file</h2>
+            <p>A .csv or .txt file, up to 20 MB and 200,000 rows. A .txt file holds one item per line. A .csv file needs a header row.</p>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="drop" id="drop">
+            <input type="file" id="file" name="file" accept=".csv,.txt,text/csv,text/plain" aria-label="Choose a .csv or .txt file">
+            <div class="drop__icon"><svg class="icon"><use href="#i-upload"/></svg></div>
+            <div><b>Choose a file</b> or drop it here</div>
+            <div class="small muted">.csv or .txt</div>
+          </div>
+          <div class="error" role="alert"></div>
+        </div>
+
+        <div id="file-info" class="stack stack--sm" hidden>
+          <div class="file-pill">
+            <svg class="icon" style="color:var(--accent)"><use href="#i-file"/></svg>
+            <div class="grow"><div class="file-pill__name" id="file-name"></div><div class="small muted" id="file-size"></div></div>
+            <button class="btn btn--ghost btn--sm" type="button" id="file-clear">Remove</button>
+          </div>
+          <div class="field" id="column-field" hidden>
+            <label for="u-column">Column that holds the items</label>
+            <select class="select" id="u-column" name="column"></select>
+            <div class="error" role="alert"></div>
+          </div>
+          <div id="preview"></div>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="u-type">Type</label>
+            <select class="select" id="u-type" name="key_type"></select>
+            <div class="error" role="alert"></div>
+          </div>
+          <div class="field">
+            <label for="u-label">Label</label>
+            <select class="select" id="u-label" name="label"></select>
+            <div class="error" role="alert"></div>
+          </div>
+        </div>
+        <div id="upload-alert"></div>
+        <div class="row">
+          <button class="btn btn--primary" id="upload-btn" type="submit"><svg class="icon icon--sm"><use href="#i-upload"/></svg>Import file</button>
+        </div>
+      </form>
+
+      <form class="card stack" id="gen-form" novalidate aria-labelledby="gen-title">
+        <div class="card__head" style="margin-bottom:0">
+          <div>
+            <h2 id="gen-title">Generate sample keys</h2>
+            <p>Adds numbered keys such as fraud_txn_0, fraud_txn_1 and so on. Useful for demos and benchmarks.</p>
+          </div>
+        </div>
+        <div class="field">
+          <label for="g-count">How many</label>
+          <input class="input" id="g-count" name="count" type="text" inputmode="numeric" value="1,000" autocomplete="off">
+          <div class="hint">1 to 200,000 per request.</div>
+          <div class="error" role="alert"></div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="g-prefix">Prefix</label>
+            <input class="input input--mono" id="g-prefix" name="prefix" type="text" value="fraud_txn_" maxlength="50" autocomplete="off">
+            <div class="error" role="alert"></div>
+          </div>
+          <div class="field">
+            <label for="g-start">Start number</label>
+            <input class="input" id="g-start" name="start" type="text" inputmode="numeric" value="0" autocomplete="off">
+            <div class="error" role="alert"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="g-type">Type</label>
+            <select class="select" id="g-type" name="key_type"></select>
+            <div class="error" role="alert"></div>
+          </div>
+          <div class="field">
+            <label for="g-label">Label</label>
+            <select class="select" id="g-label" name="label"></select>
+            <div class="error" role="alert"></div>
+          </div>
+        </div>
+        <div id="gen-alert"></div>
+        <div class="row">
+          <button class="btn btn--secondary" id="gen-btn" type="submit">Generate keys</button>
+        </div>
+      </form>
+    </div>
+
+    <section id="summary-area" aria-live="polite"></section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/import.js') }}" defer></script>
+{% endblock %}

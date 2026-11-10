@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Visualizer - BloomGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Visualizer</h1>
+      <p class="lead">Watch bits switch on as words are added to a small filter.</p>
+    </div>
+  </div>
+  <div class="page-body">
+    <section class="card">
+      <div class="empty">
+        <div class="empty__icon"><svg class="icon icon--lg"><use href="#i-bolt"/></svg></div>
+        <h3>This page is not built yet</h3>
+        <p>It will show a grid of bits that light up for each word. The backend for it is already running, so the page can be added without changing the server.</p>
+        <a class="btn btn--primary" href="{{ url_for('dashboard') }}">Back to the dashboard</a>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

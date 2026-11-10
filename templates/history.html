@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}History - BloomGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>History</h1>
+      <p class="lead">Every check that has been run, newest first. The most recent 10,000 are kept.</p>
+    </div>
+    <div class="page-head__actions">
+      <button class="btn btn--secondary" id="clear-btn" type="button"><svg class="icon icon--sm"><use href="#i-trash"/></svg>Clear history</button>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <section class="card card--flush" aria-labelledby="hist-title">
+      <div class="toolbar">
+        <h2 id="hist-title" class="visually-hidden">Check history</h2>
+        <div class="chips" role="group" aria-label="Filter by verdict" id="verdict-chips"></div>
+      </div>
+      <div id="list"></div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/history.js') }}" defer></script>
+{% endblock %}
