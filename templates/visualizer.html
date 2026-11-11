@@ -6,18 +6,69 @@
   <div class="page-head">
     <div class="page-head__text">
       <h1>Visualizer</h1>
-      <p class="lead">Watch bits switch on as words are added to a small filter.</p>
+      <p class="lead">A small Bloom filter you can see inside. Add words, then look one up and follow the bits it touches. This filter is only a demo and never changes your real blacklist.</p>
     </div>
   </div>
-  <div class="page-body">
-    <section class="card">
-      <div class="empty">
-        <div class="empty__icon"><svg class="icon icon--lg"><use href="#i-bolt"/></svg></div>
-        <h3>This page is not built yet</h3>
-        <p>It will show a grid of bits that light up for each word. The backend for it is already running, so the page can be added without changing the server.</p>
-        <a class="btn btn--primary" href="{{ url_for('dashboard') }}">Back to the dashboard</a>
+
+  <div class="page-body grid grid--side">
+    <section class="card stack" aria-labelledby="vz-title">
+      <div class="card__head" style="margin-bottom:0">
+        <div><h2 id="vz-title">Bit array</h2><p id="vz-sub">Loading...</p></div>
       </div>
+      <div id="vz-grid" class="vz-grid"></div>
+      <ul class="vz-legend" aria-label="Legend">
+        <li><span class="vz-key"></span>Off (0)</li>
+        <li><span class="vz-key vz-key--on"></span>On (1)</li>
+        <li><span class="vz-key vz-key--hit"></span>Checked, on</li>
+        <li><span class="vz-key vz-key--miss"></span>Checked, off</li>
+      </ul>
+      <div class="summary" id="vz-stats"></div>
+      <div id="vz-result" aria-live="polite"></div>
     </section>
+
+    <div class="stack">
+      <form class="card stack" id="vz-form" novalidate aria-labelledby="vw-title">
+        <div class="card__head" style="margin-bottom:0"><div><h2 id="vw-title">Try a word</h2><p>Up to 1,000 words can be added.</p></div></div>
+        <div class="field">
+          <label for="vz-item">Word</label>
+          <input class="input input--lg input--mono" id="vz-item" name="item" type="text" autocomplete="off" spellcheck="false" maxlength="2048" placeholder="hello">
+          <div class="error" role="alert"></div>
+        </div>
+        <div class="row">
+          <button class="btn btn--primary" id="vz-insert" type="submit"><svg class="icon icon--sm"><use href="#i-plus"/></svg>Add word</button>
+          <button class="btn btn--secondary" id="vz-query" type="button"><svg class="icon icon--sm"><use href="#i-search"/></svg>Look up</button>
+        </div>
+        <hr class="rule">
+        <div class="stack stack--sm">
+          <div><b>Find a false positive</b><p class="small muted">Tries random words until one that was never added still passes the filter.</p></div>
+          <div class="row"><button class="btn btn--secondary" id="vz-fp" type="button">Search for one</button></div>
+        </div>
+      </form>
+
+      <form class="card stack" id="vz-reset" novalidate aria-labelledby="vr-title">
+        <div class="card__head" style="margin-bottom:0"><div><h2 id="vr-title">Start over</h2><p>Pick the size and the number of hashes, then reset.</p></div></div>
+        <div class="form-row">
+          <div class="field">
+            <label for="vz-m">Bits (m)</label>
+            <select class="select" id="vz-m" name="m"><option>16</option><option>32</option><option>64</option><option selected>128</option><option>256</option><option>512</option></select>
+          </div>
+          <div class="field">
+            <label for="vz-k">Hashes (k)</label>
+            <select class="select" id="vz-k" name="k"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+          </div>
+        </div>
+        <div class="row"><button class="btn btn--ghost" id="vz-reset-btn" type="submit">Reset filter</button></div>
+      </form>
+
+      <section class="card" aria-labelledby="vl-title">
+        <div class="card__head"><div><h2 id="vl-title">Words added</h2></div></div>
+        <div id="vz-words" class="vz-words"></div>
+      </section>
+    </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/visualizer.js') }}" defer></script>
 {% endblock %}

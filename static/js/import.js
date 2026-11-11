@@ -190,4 +190,48 @@ BG.ready(function () {
       holder.appendChild(BG.alert('danger', 'No keys were generated.', BG.errorText(err)));
     });
   });
+
+  /* ---- built-in datasets (C12) ---------------------------------------------------- */
+  var dsBox = BG.$('#datasets');
+  function datasetCard(d) {
+    var limit = BG.h('input', { class: 'input', type: 'text', inputmode: 'numeric', autocomplete: 'off',
+      placeholder: 'All rows', 'aria-label': 'Maximum rows to load from ' + d.title, id: 'ds-limit-' + d.name });
+    var err = BG.h('div', { class: 'error', role: 'alert' });
+    var btn = BG.h('button', { class: 'btn btn--secondary', type: 'button' }, 'Load dataset');
+    var body;
+    if (d.available) {
+      btn.addEventListener('click', function () {
+        err.textContent = '';
+        var raw = limit.value.trim(), n = null;
+        if (raw !== '') {
+          n = BG.parseIntLoose(raw);
+          if (n === null || n < 1 || n > 200000) { err.textContent = 'Enter a whole number from 1 to 200,000, or leave empty.'; limit.focus(); return; }
+        }
+        BG.setBusy(btn, true);
+        BG.api('/api/datasets/load', { method: 'POST', json: n === null ? { name: d.name } : { name: d.name, limit: n } }).then(function (res) {
+          BG.setBusy(btn, false);
+          showSummary(res, d.title + ' loaded');
+          BG.toast('Added ' + BG.fmtInt(res.rows_added) + ' new items.', 'success');
+        }, function (e) { BG.setBusy(btn, false); err.textContent = BG.errorText(e); });
+      });
+      body = BG.h('div', { class: 'stack stack--sm' },
+        BG.h('div', { class: 'field' }, BG.h('label', { for: limit.id, text: 'Rows to load (optional)' }), limit, err),
+        BG.h('div', { class: 'row' }, btn));
+    } else {
+      var links = [BG.h('p', { class: 'small muted', text: 'Not found. Put ' + d.expected_files.join(' or ') + ' in the data folder, then reload this page.' })];
+      if (d.download_url) links.push(BG.h('a', { class: 'btn btn--ghost btn--sm', href: d.download_url, target: '_blank', rel: 'noopener noreferrer', text: 'Where to download' }));
+      body = BG.h('div', { class: 'stack stack--sm' }, links);
+    }
+    return BG.h('div', { class: 'ds' },
+      BG.h('div', { class: 'row row--between' },
+        BG.h('h3', { text: d.title }),
+        BG.h('span', { class: 'badge ' + (d.available ? 'badge--clean' : 'badge--invalid'), text: d.available ? 'Ready' : 'Missing' })),
+      BG.h('p', { class: 'small muted', text: d.description }),
+      body);
+  }
+  BG.api('/api/datasets').then(function (list) {
+    BG.clear(dsBox).appendChild(BG.h('div', { class: 'ds-grid' }, list.map(datasetCard)));
+  }, function (e) {
+    BG.clear(dsBox).appendChild(BG.alert('danger', 'Could not list the datasets.', BG.errorText(e)));
+  });
 });

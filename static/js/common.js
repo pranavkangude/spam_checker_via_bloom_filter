@@ -93,7 +93,8 @@
     CLEAN: { text: 'Clean', cls: 'clean', icon: 'check-circle' },
     BLACKLISTED: { text: 'Blacklisted', cls: 'blacklisted', icon: 'x-circle' },
     FALSE_POSITIVE: { text: 'False positive', cls: 'fp', icon: 'alert' },
-    POSSIBLY_BLACKLISTED: { text: 'Possibly blacklisted', cls: 'possible', icon: 'alert' }
+    POSSIBLY_BLACKLISTED: { text: 'Possibly blacklisted', cls: 'possible', icon: 'alert' },
+    INVALID: { text: 'Invalid', cls: 'invalid', icon: 'x-circle' }
   };
   BG.verdictBadge = function (v) {
     var d = BG.VERDICTS[v] || { text: String(v), cls: '', icon: 'info' };
@@ -138,6 +139,36 @@
           msg = res.status >= 500 ? 'The server hit a problem.' : 'The request failed (' + res.status + ').';
         }
         throw new ApiError(res.status, err.code || 'HTTP_' + res.status, msg, err.field, err.request_id);
+      });
+    }, function () {
+      throw new ApiError(0, 'NETWORK_ERROR', 'Could not reach the server. Check that it is running, then try again.');
+    });
+  };
+
+  /* Save a response as a file (used for CSV downloads). opts as for BG.api. */
+  BG.download = function (path, opts, fallbackName) {
+    opts = opts || {};
+    var init = { method: opts.method || 'GET', headers: {} };
+    if (opts.json !== undefined) { init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(opts.json); }
+    else if (opts.form) init.body = opts.form;
+    return fetch(path, init).then(function (res) {
+      if (!res.ok) {
+        return res.text().then(function (text) {
+          var data = null;
+          try { data = JSON.parse(text); } catch (e) { data = null; }
+          var err = data && data.error ? data.error : {};
+          throw new ApiError(res.status, err.code || 'HTTP_' + res.status, err.message || 'The download failed (' + res.status + ').', err.field, err.request_id);
+        });
+      }
+      var name = fallbackName || 'download';
+      var m = /filename="?([^";]+)"?/.exec(res.headers.get('Content-Disposition') || '');
+      if (m) name = m[1];
+      return res.blob().then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = name;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
       });
     }, function () {
       throw new ApiError(0, 'NETWORK_ERROR', 'Could not reach the server. Check that it is running, then try again.');
