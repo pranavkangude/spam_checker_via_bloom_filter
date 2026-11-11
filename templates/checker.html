@@ -10,7 +10,13 @@
     </div>
   </div>
 
-  <div class="page-body grid grid--main">
+  <div class="page-body">
+   <div class="tabs" role="tablist" aria-label="Check mode">
+     <button class="tab" role="tab" id="tab-single" aria-controls="panel-single" aria-selected="true" type="button">Single item</button>
+     <button class="tab" role="tab" id="tab-batch" aria-controls="panel-batch" aria-selected="false" tabindex="-1" type="button">Batch</button>
+   </div>
+
+   <div id="panel-single" role="tabpanel" aria-labelledby="tab-single" class="grid grid--main">
     <div class="stack">
       <form class="card stack" id="check-form" novalidate>
         <div class="field">
@@ -49,10 +55,65 @@
       </div>
       <div id="recent"><div class="skeleton" style="height:120px"></div></div>
     </aside>
+   </div>
+
+   <div id="panel-batch" role="tabpanel" aria-labelledby="tab-batch" class="stack" hidden>
+    <form class="card stack" id="batch-form" novalidate>
+      <div class="card__head" style="margin-bottom:0">
+        <div>
+          <h2>Check many items</h2>
+          <p>Up to 100,000 items per batch. Batch checks are not added to the history.</p>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" id="src-label">Where are the items?</span>
+        <div class="seg" role="radiogroup" aria-labelledby="src-label">
+          <label><input type="radio" name="source" value="paste" checked><span>Paste a list</span></label>
+          <label><input type="radio" name="source" value="file"><span>Upload a file</span></label>
+        </div>
+      </div>
+      <div class="field" id="paste-field">
+        <label for="b-text">Items, one per line</label>
+        <textarea class="textarea" id="b-text" name="text" rows="8" spellcheck="false" autocomplete="off" placeholder="fraud_txn_1&#10;clean_txn_77"></textarea>
+        <div class="hint" id="b-count">0 items</div>
+        <div class="error" role="alert"></div>
+      </div>
+      <div class="field" id="file-field" hidden>
+        <label for="b-file">File (.csv or .txt, up to 20 MB)</label>
+        <input class="input" id="b-file" name="file" type="file" accept=".csv,.txt,text/csv,text/plain">
+        <div class="hint">A .txt file has one item per line. A .csv file needs a header row.</div>
+        <div class="error" role="alert"></div>
+      </div>
+      <div class="field" id="column-field" hidden>
+        <label for="b-column">Column name (optional)</label>
+        <input class="input" id="b-column" name="column" type="text" autocomplete="off" placeholder="First column is used when empty">
+        <div class="error" role="alert"></div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="b-type">Type</label>
+          <select class="select" id="b-type" name="key_type"></select>
+        </div>
+        <div class="field">
+          <span class="label" id="bmode-label">How to check</span>
+          <div class="seg" role="radiogroup" aria-labelledby="bmode-label">
+            <label><input type="radio" name="bmode" value="two_stage" checked><span>Filter and database</span></label>
+            <label><input type="radio" name="bmode" value="bloom_only"><span>Filter only</span></label>
+          </div>
+        </div>
+      </div>
+      <div id="batch-alert"></div>
+      <div class="row">
+        <button class="btn btn--primary" id="batch-btn" type="submit"><svg class="icon icon--sm"><use href="#i-list"/></svg>Check batch</button>
+      </div>
+    </form>
+    <section id="batch-result" aria-live="polite"></section>
+   </div>
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/checker.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/batch.js') }}" defer></script>
 {% endblock %}

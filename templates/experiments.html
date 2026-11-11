@@ -6,18 +6,76 @@
   <div class="page-head">
     <div class="page-head__text">
       <h1>Experiments</h1>
-      <p class="lead">Measure how often the filter is wrong and compare it with the theory.</p>
+      <p class="lead">Measure the false-positive rate of a Bloom filter and compare it with the formula. Each run saves its results so you can reopen them later.</p>
     </div>
   </div>
-  <div class="page-body">
-    <section class="card">
-      <div class="empty">
-        <div class="empty__icon"><svg class="icon icon--lg"><use href="#i-bolt"/></svg></div>
-        <h3>This page is not built yet</h3>
-        <p>It will plot measured false-positive rates against the formula. The backend for it is already running, so the page can be added without changing the server.</p>
-        <a class="btn btn--primary" href="{{ url_for('dashboard') }}">Back to the dashboard</a>
-      </div>
-    </section>
+
+  <div class="page-body stack">
+    <div class="grid grid--side">
+      <form class="card stack" id="exp-form" novalidate aria-labelledby="ef-title">
+        <div class="card__head" style="margin-bottom:0">
+          <div>
+            <h2 id="ef-title">Run an experiment</h2>
+            <p>The web limit is 200,000 items and 500,000 trials. The target rate is 1%.</p>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label" id="kind-label">What to vary</span>
+          <div class="choices choices--3" role="radiogroup" aria-labelledby="kind-label">
+            <label class="choice">
+              <input type="radio" name="kind" value="vary_k" checked>
+              <span class="choice__box"><b>Number of hashes</b><span>Fix the size, try k = 1 to 14. The rate is lowest near the optimal k.</span></span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="kind" value="vary_ratio">
+              <span class="choice__box"><b>Bits per item</b><span>Give the filter 4 to 16 bits per item. More bits lower the rate.</span></span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="kind" value="overfill">
+              <span class="choice__box"><b>Overfilling</b><span>Insert 1x to 3x the planned items. The rate climbs past the target.</span></span>
+            </label>
+          </div>
+        </div>
+        <div class="form-row form-row--3">
+          <div class="field">
+            <label for="e-n">Items (n)</label>
+            <input class="input" id="e-n" name="n" type="text" inputmode="numeric" value="50,000" autocomplete="off">
+            <div class="error" role="alert"></div>
+          </div>
+          <div class="field">
+            <label for="e-trials">Trials</label>
+            <input class="input" id="e-trials" name="trials" type="text" inputmode="numeric" value="100,000" autocomplete="off">
+            <div class="hint">Unseen items tested per point.</div>
+            <div class="error" role="alert"></div>
+          </div>
+          <div class="field">
+            <label for="e-seed">Seed</label>
+            <input class="input" id="e-seed" name="seed" type="text" inputmode="numeric" value="42" autocomplete="off">
+            <div class="error" role="alert"></div>
+          </div>
+        </div>
+        <div id="exp-alert"></div>
+        <div id="exp-progress"></div>
+        <div class="row">
+          <button class="btn btn--primary" id="exp-btn" type="submit"><svg class="icon icon--sm"><use href="#i-bolt"/></svg>Run experiment</button>
+        </div>
+      </form>
+
+      <aside class="card" aria-labelledby="eh-title">
+        <div class="card__head">
+          <div><h2 id="eh-title">Saved experiments</h2><p>Pick one to view it again.</p></div>
+        </div>
+        <div id="exp-history"><div class="skeleton" style="height:120px"></div></div>
+      </aside>
+    </div>
+
+    <section id="exp-result" aria-live="polite"></section>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/chart.umd.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lab.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/experiments.js') }}" defer></script>
 {% endblock %}

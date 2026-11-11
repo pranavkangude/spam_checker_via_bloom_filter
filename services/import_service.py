@@ -77,9 +77,11 @@ def _iter_csv(text: str, column: Optional[str]) -> Iterator[str]:
         raise ValidationError(f"CSV could not be parsed: {exc}", field="file")
 
 
-def import_file(filename, data: bytes, column=None, key_type: str = "other",
-                label: str = "fraud") -> dict:
-    """Import an uploaded .csv or .txt file. Returns the import summary (4.5)."""
+def rows_from_upload(filename, data: bytes, column=None):
+    """Validate an uploaded .csv or .txt and return (clean file name, iterator of raw rows).
+
+    Shared by the bulk import and the batch check (C13), so both accept the same files.
+    """
     name = os.path.basename(filename or "")
     ext = os.path.splitext(name)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
@@ -91,7 +93,14 @@ def import_file(filename, data: bytes, column=None, key_type: str = "other",
         raise ValidationError("file is empty", field="file")
 
     text = _decode(data)
-    keys = _iter_csv(text, column) if ext == ".csv" else _iter_txt(text)
+    rows = _iter_csv(text, column) if ext == ".csv" else _iter_txt(text)
+    return name, rows
+
+
+def import_file(filename, data: bytes, column=None, key_type: str = "other",
+                label: str = "fraud") -> dict:
+    """Import an uploaded .csv or .txt file. Returns the import summary (4.5)."""
+    name, keys = rows_from_upload(filename, data, column)
     keys = _limit_rows(keys)
     return filter_service.add_many(
         keys, key_type, label, source="csv", file_name=name[:FILE_NAME_MAX]
