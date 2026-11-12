@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} {{ heading }} - BloomGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <section class="card error-page" aria-labelledby="err-title">
+    <div class="error-page__code" aria-hidden="true">{{ code }}</div>
+    <h1 id="err-title">{{ heading }}</h1>
+    <p>{{ message }}</p>
+    {% if request_id %}<p class="small">Request id: <code>{{ request_id }}</code></p>{% endif %}
+    <div class="row">
+      <a class="btn btn--primary" href="{{ url_for('dashboard') }}">Back to the dashboard</a>
+      <a class="btn btn--secondary" href="{{ url_for('check') }}">Check an item</a>
+    </div>
+  </section>
+</div>
+{% endblock %}
