@@ -44,6 +44,23 @@ def _page_view(template: str):
     return view
 
 
+_ERROR_HEADINGS = {400: "Bad request", 403: "Not allowed", 404: "Page not found", 405: "Method not allowed",
+                   413: "File too large", 500: "Something went wrong"}
+
+
+def _error_page(code: int, message: str, request_id: str | None = None):
+    """A styled HTML error page for browser requests (the API keeps its JSON errors)."""
+    if code == 404:
+        message = "That page does not exist. Check the address, or go back to the dashboard."
+    try:
+        html = render_template("error.html", code=code, heading=_ERROR_HEADINGS.get(code, "Error"),
+                               message=message, request_id=request_id)
+    except Exception:                      # the error page itself must never fail
+        suffix = f" Request id: {request_id}" if request_id else ""
+        return f"{code} {message}{suffix}", code
+    return html, code
+
+
 def create_app(storage_dir=None, testing: bool = False) -> Flask:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     app = Flask(__name__)
@@ -86,7 +103,7 @@ def create_app(storage_dir=None, testing: bool = False) -> Flask:
     @app.errorhandler(HTTPException)
     def handle_http_error(exc: HTTPException):
         if not request.path.startswith("/api/"):
-            return exc
+            return _error_page(exc.code or 500, exc.description)
         code = _HTTP_CODES.get(exc.code, "HTTP_ERROR")
         response = jsonify({"error": {"code": code, "message": exc.description}})
         response.status_code = exc.code
@@ -113,7 +130,7 @@ def create_app(storage_dir=None, testing: bool = False) -> Flask:
             return jsonify({"error": {"code": "INTERNAL_ERROR",
                                       "message": "Something went wrong. Check the terminal.",
                                       "request_id": request_id}}), 500
-        return f"Something went wrong. Check the terminal. Request id: {request_id}", 500
+        return _error_page(500, "Something went wrong. Check the terminal for details.", request_id)
 
     return app
 

@@ -19,7 +19,41 @@ item --> normalize --> Bloom filter (memory, O(k))
 The Bloom filter never gives a false negative. Its occasional false positives are removed by the
 exact SQLite lookup, so the slow path only runs for a small fraction of traffic.
 
-Everything about the design is in `docs/` (PRD, TRD, APP_FLOW, BACKEND_SCHEMA, IMPLEMENTATION_PLAN).
+Everything about the design is in `docs/` (PRD, TRD, APP_FLOW, BACKEND_SCHEMA, IMPLEMENTATION_PLAN). The manual test steps are in `docs/TESTING_CHECKLIST.md`.
+
+---
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Setup](docs/screenshots/01-setup.png) **Setup**: live calculator for the filter size | ![Dashboard](docs/screenshots/02-dashboard.png) **Dashboard**: fill level, counters, memory comparison |
+| ![Check](docs/screenshots/03-check-result.png) **Check**: the verdict and the bits the item touches | ![Batch](docs/screenshots/04-batch-check.png) **Batch check**: summary and filterable results |
+| ![Blacklist](docs/screenshots/05-blacklist.png) **Blacklist**: search, filter, remove | ![Import](docs/screenshots/06-import.png) **Import**: CSV upload, built-in datasets, generator |
+| ![History](docs/screenshots/07-history.png) **History**: every single check, by verdict | ![Benchmark](docs/screenshots/08-benchmark.png) **Benchmark**: filter against a Python set |
+| ![Experiments](docs/screenshots/09-experiments.png) **Experiments**: measured against the formula | ![Visualizer](docs/screenshots/10-visualizer.png) **Visualizer**: watch the bits switch on |
+
+On a phone the tables turn into stacked cards and the navigation collapses into a menu:
+
+<img src="docs/screenshots/11-mobile-check.png" alt="Check page at phone width" width="260">
+
+## Pages
+
+| Page | Address | What it does |
+|---|---|---|
+| Setup | `/setup` | First run only. Calculates the filter size from the item count and target false-positive rate. |
+| Dashboard | `/` | Fill level, estimated false-positive rate, counters, memory against a Python set. |
+| Check | `/check` | One item (two-stage or filter-only), or a batch of up to 100,000 pasted or uploaded. |
+| Blacklist | `/blacklist` | Add, search, filter and remove items. |
+| Import | `/import` | CSV or text upload, the Kaggle datasets (or their small samples), synthetic keys. |
+| History | `/history` | Past single checks, filtered by verdict. |
+| Benchmark | `/benchmark` | Memory and speed of the filter against a Python set. |
+| Experiments | `/experiments` | False-positive rate against the formula while varying k, bits per item, or overfilling. |
+| Visualizer | `/visualizer` | A 128-bit demo filter that explains each lookup bit by bit. Separate from the real filter. |
+| Settings | `/settings` | Rebuild with new parameters, or reset everything. |
+
+The pages are plain HTML, CSS and JavaScript (no framework). The design tokens are at the top of
+`static/css/style.css`. Chart.js is stored in `static/vendor/`, so the charts work offline.
 
 ---
 
@@ -56,7 +90,7 @@ Quick check that the server is alive: open `http://127.0.0.1:5000/api/health`.
 ## 3. Test
 
 ```powershell
-pytest -q                         # whole suite, about 1 minute
+pytest -q                         # whole suite (465 tests), about 1 minute
 pytest tests/test_integration.py -q
 ```
 
@@ -125,6 +159,8 @@ Full request and response shapes are in `docs/BACKEND_SCHEMA.md`.
 | `POST /api/blacklist/bulk` | upload a `.csv` or `.txt` file |
 | `POST /api/blacklist/generate` | add synthetic keys |
 | `POST /api/check` | two-stage or bloom-only check |
+| `POST /api/check/batch` | check up to 100,000 items (JSON list or uploaded file); `?format=csv` downloads the results |
+| `GET /api/datasets`, `POST /api/datasets/load` | built-in datasets: availability, and load into the blacklist |
 | `GET /api/history`, `DELETE /api/history` | check logs |
 | `POST /api/benchmark`, `GET /api/benchmark/runs` | benchmark job and saved runs |
 | `POST /api/experiments`, `GET /api/experiments[/<id>[/csv]]` | experiment job, saved experiments, CSV |
@@ -145,6 +181,7 @@ get the finished result in one call instead. Only one job runs at a time (409 `J
 | Synthetic generator | 200,000 keys per request |
 | Benchmark on the web | 200,000 items, 6 sizes, 500,000 queries |
 | Experiment on the web | `n` 200,000, 500,000 trials |
+| Batch check | 100,000 items per request; batch checks are not written to the history |
 | Check history kept | newest 10,000 rows |
 
 Anything bigger belongs in the scripts below. Web-limit violations return `413`.
@@ -170,7 +207,6 @@ Every script is seeded (`--seed 42`), so the same arguments give the same number
 | `409 JOB_RUNNING` | a benchmark or experiment is still running; wait for it |
 | `503 DATABASE_BUSY` | another write held the database; retry |
 | Port 5000 already in use | stop the other server, or change the port in `app.py` |
-| Pylance cannot resolve `api_extra` | harmless until Member C adds that file |
 
 ## 10. Team and ownership
 

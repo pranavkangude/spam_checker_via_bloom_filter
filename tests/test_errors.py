@@ -212,3 +212,16 @@ def test_no_api_route_returns_500_on_garbage(client):
     assert client.get("/api/filter").get_json()["item_count"] == 1
     v = client.post("/api/check", json={"item": "keep_me", "key_type": "transaction_id"})
     assert v.get_json()["verdict"] == "BLACKLISTED"
+
+
+def test_browser_404_is_a_styled_page_not_json(tmp_path):
+    from app import create_app
+    c = create_app(storage_dir=tmp_path, testing=True).test_client()
+    c.post("/api/filter", json={"name": "main", "type": "standard", "n": 1000, "p": 0.01,
+                                "confirm_replace": True})
+    r = c.get("/no-such-page")
+    assert r.status_code == 404
+    assert r.mimetype == "text/html"
+    assert b"Page not found" in r.data and b"BloomGuard" in r.data
+    api = c.get("/api/no-such-route")
+    assert api.status_code == 404 and api.get_json()["error"]["code"]
